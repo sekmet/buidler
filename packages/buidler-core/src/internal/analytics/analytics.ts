@@ -10,15 +10,15 @@ import * as builtinTaskNames from "../../builtin-tasks/task-names";
 import { ExecutionMode, getExecutionMode } from "../core/execution-mode";
 import { getPackageJson } from "../util/packageInfo";
 
-import { AnalyticsClient, GoogleAnalytics } from "./google";
+import { AbortAnalytics, AnalyticsClient } from "./client";
+import { GoogleAnalytics } from "./google";
 
-export type AbortAnalytics = () => void;
 export type UserType = "CI" | "Developer";
 
-const log = debug("buidler:core:analytics");
+export const NoOp = () => {};
+export const NoOpAsync = () => Promise.resolve();
 
-const NoOp = () => {};
-const NoOpAsync = () => Promise.resolve();
+const log = debug("buidler:core:analytics");
 
 export class Analytics {
   public static async getInstance(rootPath: string, enabled: boolean) {

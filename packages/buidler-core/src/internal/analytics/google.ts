@@ -3,13 +3,8 @@ import debug from "debug";
 import fetch from "node-fetch";
 import qs from "qs";
 
-import { AbortAnalytics, UserType } from "./analytics";
-
-export interface AnalyticsClient {
-  sendTaskHit: (
-    taskKind: "builtin" | "custom"
-  ) => [AbortAnalytics, Promise<void>];
-}
+import { UserType } from "./analytics";
+import { AbortAnalytics, AnalyticsClient } from "./client";
 
 // VERY IMPORTANT:
 // The documentation doesn't say so, but the user-agent parameter is required (ua).

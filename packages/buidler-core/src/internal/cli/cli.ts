@@ -6,7 +6,7 @@ import "source-map-support/register";
 
 import { TASK_HELP } from "../../builtin-tasks/task-names";
 import { TaskArguments } from "../../types";
-import { Analytics } from "../analytics/analytics";
+import { Analytics } from "../analytics";
 import { BUIDLER_NAME } from "../constants";
 import { BuidlerContext } from "../context";
 import { loadConfigAndTasks } from "../core/config/config-loading";
