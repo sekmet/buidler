@@ -107,8 +107,10 @@ async function main() {
 
     let taskName = parsedTaskName !== undefined ? parsedTaskName : "help";
 
-    // tslint:disable-next-line: prefer-const
-    let [abortAnalytics, hitPromise] = await analytics.sendTaskHit(taskName);
+    // trigger send of task hit. Based on actual task run time, if it's
+    // long enough we can accept to wait for it to complete (await hitPromise), or else cancel it.
+    // TODO: think of a better mechanism, ie. continue delivery in a detached background process
+    const [abortAnalytics, hitPromise] = analytics.sendTaskHit(taskName);
 
     let taskArguments: TaskArguments;
 
