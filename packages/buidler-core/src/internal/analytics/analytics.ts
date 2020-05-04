@@ -13,6 +13,7 @@ import { getPackageJson } from "../util/packageInfo";
 import { BugsnagClient } from "./bugsnag";
 import { AbortAnalytics, AnalyticsClient } from "./client";
 import { GoogleAnalytics } from "./google";
+import { RollbarClient } from "./rollbar";
 
 export type UserType = "CI" | "Developer";
 
@@ -68,6 +69,14 @@ export class Analytics {
       buidlerVersion
     );
 
+    const rollbarClient = new RollbarClient(
+      projectId,
+      clientId,
+      userType,
+      userAgent,
+      buidlerVersion
+    );
+
     const googleClient = new GoogleAnalytics(
       projectId,
       clientId,
@@ -76,7 +85,7 @@ export class Analytics {
       buidlerVersion
     );
 
-    this._clients = [googleClient, bugsnagClient];
+    this._clients = [googleClient, rollbarClient, bugsnagClient];
   }
 
   /**
