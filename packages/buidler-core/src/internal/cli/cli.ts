@@ -44,6 +44,7 @@ async function main() {
   // We first accept this argument anywhere, so we know if the user wants
   // stack traces before really parsing the arguments.
   let showStackTraces = process.argv.includes("--show-stack-traces");
+  let analytics: Analytics | undefined;
 
   try {
     const packageJson = await getPackageJson();
@@ -97,7 +98,7 @@ async function main() {
     const ctx = BuidlerContext.createBuidlerContext();
     const config = loadConfigAndTasks(buidlerArguments);
 
-    const analytics = await Analytics.getInstance(
+    analytics = await Analytics.getInstance(
       config.paths.root,
       config.analytics.enabled
     );
@@ -163,6 +164,11 @@ async function main() {
     }
     log(`Killing Buidler after successfully running task ${taskName}`);
   } catch (error) {
+    // TODO trigger send of error reports from inside BRE.run() ?
+    if (analytics !== undefined) {
+      await analytics.sendError(error);
+    }
+
     let isBuidlerError = false;
 
     if (BuidlerError.isBuidlerError(error)) {
@@ -207,7 +213,7 @@ async function main() {
       }
     }
 
-    process.exit(1);
+    process.exitCode = 1;
   }
 }
 

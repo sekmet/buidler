@@ -10,6 +10,7 @@ import * as builtinTaskNames from "../../builtin-tasks/task-names";
 import { ExecutionMode, getExecutionMode } from "../core/execution-mode";
 import { getPackageJson } from "../util/packageInfo";
 
+import { BugsnagClient } from "./bugsnag";
 import { AbortAnalytics, AnalyticsClient } from "./client";
 import { GoogleAnalytics } from "./google";
 
@@ -22,19 +23,26 @@ const log = debug("buidler:core:analytics");
 
 export class Analytics {
   public static async getInstance(rootPath: string, enabled: boolean) {
+    const [buidlerVersion, clientId] = await Promise.all([
+      getBuidlerVersion(),
+      getClientId()
+    ]);
+
     const analytics: Analytics = new Analytics({
       projectId: getProjectId(rootPath),
-      clientId: await getClientId(),
+      clientId,
       enabled,
       userType: getUserType(),
       userAgent: getUserAgent(),
-      buidlerVersion: await getBuidlerVersion()
+      buidlerVersion
     });
 
     return analytics;
   }
 
   private readonly _googleClient: AnalyticsClient;
+  private readonly _bugsnagClient: AnalyticsClient;
+
   private readonly _enabled: boolean;
 
   private constructor({
@@ -53,6 +61,14 @@ export class Analytics {
     buidlerVersion: string;
   }) {
     this._enabled = enabled && !this._isLocalDev();
+
+    this._bugsnagClient = new BugsnagClient(
+      projectId,
+      clientId,
+      userType,
+      userAgent,
+      buidlerVersion
+    );
 
     this._googleClient = new GoogleAnalytics(
       projectId,
@@ -83,6 +99,17 @@ export class Analytics {
     }
 
     return this._googleClient.sendTaskHit(taskKind);
+  }
+
+  public async sendError(error: Error) {
+    if (!this._enabled) {
+      return NoOpAsync();
+    }
+
+    // send error report to all configured clients
+    const clients = [this._googleClient, this._bugsnagClient];
+
+    return Promise.all(clients.map(client => client.sendErrorReport(error)));
   }
 
   private _isABuiltinTaskName(taskName: string) {

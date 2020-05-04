@@ -13,7 +13,21 @@ export function getErrorCode(error: ErrorDescriptor): string {
   return `${ERROR_PREFIX}${error.number}`;
 }
 
-export const ERROR_RANGES = {
+type ErrorCategory =
+  | "GENERAL"
+  | "NETWORK"
+  | "TASK_DEFINITIONS"
+  | "ARGUMENTS"
+  | "RESOLVER"
+  | "SOLC"
+  | "BUILTIN_TASKS"
+  | "ARTIFACTS"
+  | "PLUGINS"
+  | "INTERNAL";
+
+export const ERROR_RANGES: {
+  [catName in ErrorCategory]: { min: number; max: number; title: string };
+} = {
   GENERAL: { min: 0, max: 99, title: "General errors" },
   NETWORK: { min: 100, max: 199, title: "Network related errors" },
   TASK_DEFINITIONS: {
@@ -721,3 +735,36 @@ Please [report it](https://github.com/nomiclabs/buidler/issues/new) to help us i
     }
   }
 };
+
+interface ErrorFullDescriptor extends ErrorDescriptor {
+  category: {
+    name: ErrorCategory;
+    min: number;
+    max: number;
+    title: string;
+  };
+  name: string;
+}
+
+export const REVERSE_ERRORS_MAP: {
+  [errorNumber: number]: ErrorFullDescriptor;
+} = Object.entries(ERRORS).reduce(
+  (obj, [category, categoryErrorsObj]) => ({
+    ...Object.entries(categoryErrorsObj).reduce(
+      (obj2, [name, errorDescriptor]) => ({
+        [errorDescriptor.number]: {
+          category: {
+            name: category,
+            ...ERROR_RANGES[category as ErrorCategory]
+          },
+          name,
+          ...errorDescriptor
+        },
+        ...obj2
+      }),
+      {}
+    ),
+    ...obj
+  }),
+  {}
+);

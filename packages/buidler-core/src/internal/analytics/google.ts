@@ -74,6 +74,11 @@ export class GoogleAnalytics implements AnalyticsClient {
     return this._sendHit(taskHit);
   }
 
+  public async sendErrorReport() {
+    // no error report for google analytics client
+    return;
+  }
+
   private _taskHit(taskKind: "builtin" | "custom"): RawAnalytics {
     return {
       // Measurement protocol version.
