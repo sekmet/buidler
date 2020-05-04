@@ -108,7 +108,7 @@ export class Analytics {
     }
 
     const sendTaskHits = this._clients
-      .map(client => client.sendTaskHit(taskKind))
+      .map(client => client.sendTaskHit(taskKind, taskName))
       .reduce(
         ({ abortAll, hitAll }, [abort, hitPromise]) => ({
           abortAll: [abort, ...abortAll],

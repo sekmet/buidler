@@ -65,11 +65,13 @@ export class GoogleAnalytics extends AnalyticsClient {
    * Trying to abort a successfully completed request is a no-op, so it's always safe to call it.
    *
    * @param taskKind The name of the task to be logged
+   * @param name The task name (unused)
    *
    * @returns The abort function
    */
   public sendTaskHit(
-    taskKind: "builtin" | "custom"
+    taskKind: "builtin" | "custom",
+    name: string
   ): [AbortAnalytics, Promise<void>] {
     const taskHit = this._taskHit(taskKind);
     return this._sendHit(taskHit);
