@@ -746,6 +746,10 @@ interface ErrorFullDescriptor extends ErrorDescriptor {
   name: string;
 }
 
+/**
+ * Store in-memory a map of errors by error number key.
+ * This is the reverse of the ERRORS and ERROR_RANGES maps, with all the unique error info flattened
+ */
 export const REVERSE_ERRORS_MAP: {
   [errorNumber: number]: ErrorFullDescriptor;
 } = Object.entries(ERRORS).reduce(

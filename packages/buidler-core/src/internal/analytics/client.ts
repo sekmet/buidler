@@ -7,21 +7,37 @@ export type TaskKind = "builtin" | "custom";
 
 interface ErrorContextData {
   errorType: "BuidlerError" | "BuidlerPluginError" | "Error";
+  // true if is originated from Buidler, false otherwise
   isBuidlerError: boolean;
+  // the base Error object message
   message: string;
 
+  // the buidler plugin name (only if is BuidlerPluginError)
   pluginName?: string;
-  title?: string;
-  name?: string;
+
+  /* the following are only available if is BuidlerError */
+  // error code number
   number?: number;
-  contextMessage?: string;
-  description?: string;
+  // error category info
   category?: {
-    title: string;
+    // category key name
     name: string;
+    // category readable description
+    title: string;
+    // min error number in category range (inclusive)
     min: number;
+    // max error number in category range (inclusive)
     max: number;
   };
+
+  // error key name
+  name?: string;
+  // error contextualized message (after processing the ErrorDescriptor message template)
+  contextMessage?: string;
+  // error title (may be Markdown)
+  title?: string;
+  // error description (may be Markdown)
+  description?: string;
 }
 
 export abstract class AnalyticsClient {
