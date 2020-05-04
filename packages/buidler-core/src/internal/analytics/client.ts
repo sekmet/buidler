@@ -8,12 +8,14 @@ export type TaskKind = "builtin" | "custom";
 interface ErrorContextData {
   errorType: "BuidlerError" | "BuidlerPluginError" | "Error";
   isBuidlerError: boolean;
+  message: string;
 
   pluginName?: string;
   title?: string;
   name?: string;
   number?: number;
-  message?: string;
+  contextMessage?: string;
+  description?: string;
   category?: {
     title: string;
     name: string;
@@ -43,6 +45,8 @@ export abstract class AnalyticsClient {
       ? "BuidlerPluginError"
       : "Error";
 
+    const { message } = error;
+
     let errorInfo = {};
     if (_isBuidlerPluginError) {
       const { pluginName } = error as BuidlerPluginError;
@@ -51,12 +55,20 @@ export abstract class AnalyticsClient {
       };
     } else if (_isBuidlerError) {
       const buidlerError = error as BuidlerError;
-      const { number, message } = buidlerError;
+
+      // error specific/contextualized info
+      const {
+        number,
+        errorDescriptor: { message: contextMessage, description, title }
+      } = buidlerError;
+
+      // general buidler error info
       const errorData = REVERSE_ERRORS_MAP[number];
-      const { category, name, title } = errorData;
+      const { category, name } = errorData;
       errorInfo = {
         number,
-        message,
+        contextMessage,
+        description,
         category,
         name,
         title
@@ -66,6 +78,7 @@ export abstract class AnalyticsClient {
     return {
       errorType,
       isBuidlerError,
+      message,
       ...errorInfo
     };
   }

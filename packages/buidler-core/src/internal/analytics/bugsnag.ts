@@ -2,9 +2,6 @@ import Bugsnag, { Event as BugsnagEvent, OnErrorCallback } from "@bugsnag/js";
 import debug from "debug";
 import os from "os";
 
-import { BuidlerError, BuidlerPluginError } from "../core/errors";
-import { REVERSE_ERRORS_MAP } from "../core/errors-list";
-
 import { NoOp, NoOpAsync, UserType } from "./analytics";
 import { AbortAnalytics, AnalyticsClient, TaskKind } from "./client";
 

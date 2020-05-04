@@ -14,6 +14,7 @@ import { BugsnagClient } from "./bugsnag";
 import { AbortAnalytics, AnalyticsClient } from "./client";
 import { GoogleAnalytics } from "./google";
 import { RollbarClient } from "./rollbar";
+import {SentryClient} from "./sentry";
 
 export type UserType = "CI" | "Developer";
 
@@ -85,7 +86,15 @@ export class Analytics {
       buidlerVersion
     );
 
-    this._clients = [googleClient, rollbarClient, bugsnagClient];
+    const sentryClient = new SentryClient(
+      projectId,
+      clientId,
+      userType,
+      userAgent,
+      buidlerVersion
+    );
+
+    this._clients = [googleClient, rollbarClient, bugsnagClient, sentryClient];
   }
 
   /**
