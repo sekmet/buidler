@@ -39,9 +39,7 @@ export class Analytics {
 
     return analytics;
   }
-
-  private readonly _googleClient: AnalyticsClient;
-  private readonly _bugsnagClient: AnalyticsClient;
+  private readonly _clients: (AnalyticsClient)[];
 
   private readonly _enabled: boolean;
 
@@ -62,7 +60,7 @@ export class Analytics {
   }) {
     this._enabled = enabled && !this._isLocalDev();
 
-    this._bugsnagClient = new BugsnagClient(
+    const bugsnagClient = new BugsnagClient(
       projectId,
       clientId,
       userType,
@@ -70,13 +68,15 @@ export class Analytics {
       buidlerVersion
     );
 
-    this._googleClient = new GoogleAnalytics(
+    const googleClient = new GoogleAnalytics(
       projectId,
       clientId,
       userType,
       userAgent,
       buidlerVersion
     );
+
+    this._clients = [googleClient, bugsnagClient];
   }
 
   /**
@@ -98,7 +98,22 @@ export class Analytics {
       return [NoOp, NoOpAsync()];
     }
 
-    return this._googleClient.sendTaskHit(taskKind);
+    const sendTaskHits = this._clients
+      .map(client => client.sendTaskHit(taskKind))
+      .reduce(
+        ({ abortAll, hitAll }, [abort, hitPromise]) => ({
+          abortAll: [abort, ...abortAll],
+          hitAll: [hitPromise, ...hitAll]
+        }),
+        { abortAll: [] as AbortAnalytics[], hitAll: [] as Array<Promise<void>> }
+      );
+
+    return [
+      () => sendTaskHits.abortAll.forEach(abort => abort()),
+      (async () => {
+        await Promise.all(sendTaskHits.hitAll);
+      })()
+    ];
   }
 
   public async sendError(error: Error) {
@@ -107,9 +122,9 @@ export class Analytics {
     }
 
     // send error report to all configured clients
-    const clients = [this._googleClient, this._bugsnagClient];
-
-    return Promise.all(clients.map(client => client.sendErrorReport(error)));
+    return Promise.all(
+      this._clients.map(client => client.sendErrorReport(error))
+    );
   }
 
   private _isABuiltinTaskName(taskName: string) {

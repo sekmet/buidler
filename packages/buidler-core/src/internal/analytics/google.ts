@@ -30,7 +30,7 @@ const googleAnalyticsUrl = "https://www.google-analytics.com/collect";
 
 const log = debug("buidler:core:analytics:google");
 
-export class GoogleAnalytics implements AnalyticsClient {
+export class GoogleAnalytics extends AnalyticsClient {
   private readonly _projectId: string;
   private readonly _clientId: string;
   private readonly _userType: UserType;
@@ -48,6 +48,7 @@ export class GoogleAnalytics implements AnalyticsClient {
     userAgent: string,
     buidlerVersion: string
   ) {
+    super();
     this._projectId = projectId;
     this._clientId = clientId;
     this._userType = userType;

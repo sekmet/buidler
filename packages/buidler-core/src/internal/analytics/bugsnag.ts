@@ -12,24 +12,7 @@ const BUGSNAG_API_KEY = "0d1affee077c44232592a0b985b2dca5";
 
 const log = debug("buidler:core:analytics:bugsnag");
 
-interface ErrorContextData {
-  errorType: "BuidlerError" | "BuidlerPluginError" | "Error";
-  isBuidlerError: boolean;
-
-  pluginName?: string;
-  title?: string;
-  name?: string;
-  number?: number;
-  message?: string;
-  category?: {
-    title: string;
-    name: string;
-    min: number;
-    max: number;
-  };
-}
-
-export class BugsnagClient implements AnalyticsClient {
+export class BugsnagClient extends AnalyticsClient {
   constructor(
     projectId: string,
     clientId: string,
@@ -37,6 +20,7 @@ export class BugsnagClient implements AnalyticsClient {
     userAgent: string,
     buidlerVersion: string
   ) {
+    super();
     // setup metadata to be included in all reports by default
     // each entry is displayed as a tab in the Bugsnag dashboard
     const metadata = {
@@ -96,46 +80,6 @@ export class BugsnagClient implements AnalyticsClient {
     } catch (error) {
       log(`Failed to report error, reason: ${error.message || error}`);
     }
-  }
-
-  private _contextualizeError(error: Error): ErrorContextData {
-    const _isBuidlerError = BuidlerError.isBuidlerError(error);
-    const _isBuidlerPluginError = BuidlerPluginError.isBuidlerPluginError(
-      error
-    );
-
-    const isBuidlerError = _isBuidlerError || _isBuidlerPluginError;
-    const errorType = _isBuidlerError
-      ? "BuidlerError"
-      : _isBuidlerPluginError
-      ? "BuidlerPluginError"
-      : "Error";
-
-    let errorInfo = {};
-    if (_isBuidlerPluginError) {
-      const { pluginName } = error as BuidlerPluginError;
-      errorInfo = {
-        pluginName
-      };
-    } else if (_isBuidlerError) {
-      const buidlerError = error as BuidlerError;
-      const { number, message } = buidlerError;
-      const errorData = REVERSE_ERRORS_MAP[number];
-      const { category, name, title } = errorData;
-      errorInfo = {
-        number,
-        message,
-        category,
-        name,
-        title
-      };
-    }
-
-    return {
-      errorType,
-      isBuidlerError,
-      ...errorInfo
-    };
   }
 
   /**
