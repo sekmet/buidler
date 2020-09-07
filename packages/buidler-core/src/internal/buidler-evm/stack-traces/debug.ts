@@ -14,6 +14,7 @@ import { isJump, isPush, Opcode } from "./opcodes";
 import { decodeRevertReason } from "./revert-reasons";
 import {
   SolidityStackTrace,
+  SourceReference,
   StackTraceEntryType,
 } from "./solidity-stack-trace";
 
@@ -97,6 +98,7 @@ export function printCallTrace(trace: CallMessageTrace, depth: number) {
     console.log(
       `${margin} unrecognized contract code: ${bufferToHex(trace.code)}`
     );
+    console.log(`${margin} contract: ${bufferToHex(trace.address)}`);
   }
 
   console.log(`${margin} value: ${trace.value.toString(10)}`);
@@ -172,6 +174,17 @@ function traceSteps(
   }
 }
 
+function flattenSourceReference(sourceReference?: SourceReference) {
+  if (sourceReference === undefined) {
+    return undefined;
+  }
+
+  return {
+    ...sourceReference,
+    file: sourceReference.file.globalName,
+  };
+}
+
 export function printStackTrace(trace: SolidityStackTrace) {
   const withDecodedMessages = trace.map((entry) =>
     entry.type === StackTraceEntryType.REVERT_ERROR
@@ -190,5 +203,10 @@ export function printStackTrace(trace: SolidityStackTrace) {
     type: StackTraceEntryType[entry.type],
   }));
 
-  console.log(JSON.stringify(withTextualType, undefined, 2));
+  const withFlattenedSourceReferences = withTextualType.map((entry) => ({
+    ...entry,
+    sourceReference: flattenSourceReference(entry.sourceReference),
+  }));
+
+  console.log(JSON.stringify(withFlattenedSourceReferences, undefined, 2));
 }
