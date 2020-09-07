@@ -11,7 +11,6 @@ import util from "util";
 
 import {
   EIP1193Provider,
-  EthereumProvider,
   ProjectPaths,
   RequestArguments,
 } from "../../../types";
